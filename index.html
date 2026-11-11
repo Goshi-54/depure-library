@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>でぷれさん素材ライブラリ</title>
+<style>
+:root{color-scheme:light;--bg:#f5f6f8;--surface:#fff;--ink:#1c2230;--muted:#5d6676;--line:#e2e5ea;--accent:#2563c9;--accent-soft:#e8f0fc;--stage:#eef0f3;--ok:#1d7a4a;--okbg:#e3f4ea;--warn:#9a5b00;--warnbg:#fdf1dc}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#14171c;--surface:#1c2027;--ink:#e6e9ee;--muted:#9aa3b2;--line:#2c323c;--accent:#7fa8ee;--accent-soft:#1f2a3d;--stage:#232830;--ok:#7fd1a4;--okbg:#1b3327;--warn:#f0c07a;--warnbg:#3a2e17}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#14171c;--surface:#1c2027;--ink:#e6e9ee;--muted:#9aa3b2;--line:#2c323c;--accent:#7fa8ee;--accent-soft:#1f2a3d;--stage:#232830;--ok:#7fd1a4;--okbg:#1b3327;--warn:#f0c07a;--warnbg:#3a2e17}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;line-height:1.6;overflow-wrap:anywhere}
+button,select{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);border-radius:9px;min-height:38px;padding:7px 13px;font-weight:600;background:var(--surface);color:var(--ink)}
+button:hover{border-color:var(--accent)}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+h1,h2,h3{margin:0;line-height:1.35}
+p{margin:0 0 10px}
+.topbar{background:var(--surface);border-bottom:1px solid var(--line)}
+.topbar-in{width:min(1180px,calc(100% - 32px));margin:auto;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 0;flex-wrap:wrap}
+.topbar h1{font-size:20px;letter-spacing:-.01em}
+.link-btn{display:inline-flex;align-items:center;min-height:38px;padding:7px 13px;border-radius:9px;background:var(--accent);color:#fff;font-size:13px;font-weight:700;text-decoration:none}
+:root[data-theme="dark"] .link-btn{color:#14171c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .link-btn{color:#14171c}}
+.shell{width:min(1180px,calc(100% - 32px));margin:auto}
+.views{display:flex;gap:2px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin:18px 0 16px}
+.views button{background:transparent;border:0;border-bottom:3px solid transparent;border-radius:0;color:var(--muted);min-height:46px;font-size:14px;padding:10px 14px}
+.views button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.views span{margin-left:6px;font-size:10px;background:var(--line);color:var(--ink);padding:2px 7px;border-radius:20px}
+.filters{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;border-radius:0;min-height:38px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .seg button[aria-pressed="true"]{color:#14171c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#14171c}}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;text-align:left;padding:0;font-weight:400}
+.stage{background:var(--stage);aspect-ratio:1/1;display:grid;place-items:center}
+.stage img{width:100%;height:100%;object-fit:contain;display:block}
+.fname{padding:10px 12px 12px;display:flex;flex-direction:column;gap:2px}
+.fname strong{font-size:13px;font-weight:600;line-height:1.45}
+.fname small{font-size:11px;color:var(--muted)}
+.kicker{font-size:10px;letter-spacing:.12em;font-weight:800;color:var(--muted);margin:0 0 4px}
+.badges{display:flex;gap:5px;flex-wrap:wrap}
+.badge{font-size:10px;border-radius:20px;padding:2px 8px;background:var(--accent-soft);color:var(--accent);font-weight:700}
+.badge.warn{background:var(--warnbg);color:var(--warn)}
+.badge.ok{background:var(--okbg);color:var(--ok)}
+.badge.plain{background:transparent;border:1px solid var(--line);color:var(--muted);font-weight:400}
+.scripts{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.script{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.script header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px}
+.script h3{font-size:18px}
+.script audio{width:100%;margin:6px 0 12px}
+.script .text{font-size:15px;line-height:1.9;border-top:1px solid var(--line);padding-top:12px}
+.script .text p{margin:0 0 14px}
+.snd{margin-top:16px;border-top:1px solid var(--line);padding-top:10px}
+.snd summary{font-size:13px;font-weight:700;cursor:pointer;color:var(--accent);padding:4px 0}
+.snd-row{padding:10px 0;border-bottom:1px solid var(--line)}
+.snd-row strong{font-size:13px}
+.snd-row audio{width:100%;height:36px;margin:6px 0 2px}
+.snd-note{font-size:11px;color:var(--muted);margin:0}
+.loc{font-size:11px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.small-btn{min-height:30px;padding:3px 10px;font-size:12px}
+.bg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,280px));gap:14px}
+.bg-grid video{width:100%;aspect-ratio:9/16;object-fit:cover;background:#000;display:block}
+.icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+.icon-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 10px;text-align:center}
+.icon-card img{width:72px;height:72px;object-fit:contain;display:block;margin:2px auto 8px}
+.icon-card strong{display:block;font-size:12px;font-weight:600}
+.more{margin-top:14px}
+dialog{border:0;border-radius:16px;padding:0;width:min(880px,calc(100% - 24px));max-height:calc(100% - 32px);background:var(--bg);color:var(--ink)}
+dialog::backdrop{background:#000a}
+.dlg-head{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 18px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:1}
+.dlg-head h2{font-size:17px}
+.dlg-body{padding:16px 18px 20px}
+.players{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.players figure{margin:0}
+.players .stage{border-radius:12px;border:1px solid var(--line)}
+.players figcaption{font-size:12px;color:var(--ink);margin-top:6px;justify-content:space-between}
+.files{list-style:none;margin:14px 0 0;padding:0;border-top:1px solid var(--line)}
+.files li{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.koma{margin-top:14px}
+.koma summary{font-size:13px;font-weight:700;cursor:pointer;color:var(--accent);padding:4px 0}
+.hidden{display:none!important}
+@media (max-width:640px){.bg-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.fname strong{font-size:12px}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="topbar-in">
+  <h1>でぷれさん素材ライブラリ</h1>
+  <a class="link-btn" id="drive-root" href="#" target="_blank" rel="noopener">ドライブのフォルダを開く</a>
+</div></header>
+<main class="shell">
+  <nav class="views" role="tablist" aria-label="素材の種類" id="views"></nav>
+  <section id="panel"></section>
+</main>
+<dialog id="dlg" aria-labelledby="dlg-title"></dialog>
+<script>
+(async () => {
+  const $ = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x != null) n.textContent = x; return n; };
+  const base = f => f.replace(/\.(gif|png|mp4)$/i, "");
+  let D;
+  try { D = await (await fetch("data/library.json")).json(); }
+  catch (e) { document.getElementById("panel").textContent = "データを読み込めませんでした。"; return; }
+  document.getElementById("drive-root").href = D["キャラ"]["ドライブ"];
+
+  // 画面に見えているカードだけコマ送りで動かす
+  const players = new Set();
+  function player(img, frames) {
+    const p = { img, frames, i: 0, t: null, on: false };
+    p.show = i => { p.i = i; img.src = frames[i].src; };
+    p.step = () => { p.show((p.i + 1) % frames.length); p.t = setTimeout(p.step, frames[p.i].ms); };
+    p.play = () => { if (p.on) return; p.on = true; p.t = setTimeout(p.step, frames[p.i].ms); };
+    p.stop = () => { p.on = false; clearTimeout(p.t); };
+    p.show(0); players.add(p); return p;
+  }
+  const io = new IntersectionObserver(es => es.forEach(e => { const p = e.target._p; if (!p) return; e.isIntersecting ? p.play() : p.stop(); }), { rootMargin: "80px" });
+
+  const TABS = [
+    { id: "script", label: "台本", n: D["台本"].length, render: renderScripts },
+    { id: "lip", label: "口パク", n: D["口パク"].length, render: () => renderMotions("lip") },
+    { id: "body", label: "全身の動き", n: D["全身"].length, render: () => renderMotions("body") },
+    { id: "bg", label: "背景", n: D["背景"].length, render: renderBg },
+    { id: "icon", label: "アイコン", n: D["アイコン"].length, render: renderIcons },
+  ];
+  const views = document.getElementById("views"), panel = document.getElementById("panel");
+  let current = "lip";
+  try { const s = localStorage.getItem("depure-tab"); if (TABS.some(t => t.id === s)) current = s; } catch (e) {}
+  const state = { angle: "正面" };
+  TABS.forEach(t => {
+    const b = $("button", "", t.label); b.role = "tab"; b.append($("span", "", t.n));
+    b.addEventListener("click", () => { current = t.id; try { localStorage.setItem("depure-tab", t.id); } catch (e) {} draw(); });
+    t.btn = b; views.append(b);
+  });
+  function draw() {
+    players.forEach(p => { p.stop(); io.unobserve(p.img.parentElement); }); players.clear();
+    TABS.forEach(t => t.btn.setAttribute("aria-selected", String(t.id === current)));
+    panel.replaceChildren(); TABS.find(t => t.id === current).render();
+  }
+
+  function copyBtn(text, label = "名前を写す") {
+    const b = $("button", "small-btn", label);
+    b.addEventListener("click", async ev => { ev.stopPropagation(); try { await navigator.clipboard.writeText(text); b.textContent = "写しました"; } catch (e) { b.textContent = "写せませんでした"; } setTimeout(() => b.textContent = label, 1500); });
+    return b;
+  }
+  function driveLink(url, label = "ドライブで開く") { const a = $("a", "", label); a.href = url; a.target = "_blank"; a.rel = "noopener"; a.style.fontSize = "12px"; return a; }
+  function placeRow(pl) {
+    const r = $("div", "row");
+    r.append($("span", "loc", "ドライブ：" + pl["場所"]));
+    if (pl.url) r.append(driveLink(pl.url));
+    r.append(copyBtn(pl["場所"], "パスを写す"));
+    return r;
+  }
+
+  function renderScripts() {
+    const g = $("div", "scripts");
+    D["台本"].forEach(s => {
+      const c = $("article", "script"), h = $("header");
+      const l = $("div"); l.append($("p", "kicker", s.id.toUpperCase() + "・" + s["秒"] + "秒"), $("h3", "", s["名前"]));
+      const bd = $("div", "badges"); bd.append($("span", "badge ok", "決定版"), $("span", "badge plain", s["根拠"]));
+      h.append(l, bd);
+      const au = $("audio"); au.controls = true; au.preload = "none"; au.src = s["音声"];
+      const tx = $("div", "text"); s["本文"].forEach(p => { const e = $("p"); p.forEach((line, i) => { if (i) e.append($("br")); e.append(line); }); tx.append(e); });
+      const r = $("div", "row"); r.append(copyBtn(s["本文"].map(p => p.join("\n")).join("\n\n"), "本文を写す"));
+      const pl = $("div"); pl.append(placeRow({ 場所: s["場所"], url: D["音声のドライブ"] }));
+      c.append(h, au, r, tx, pl);
+      const snd = s["BGM・SE"] || [];
+      if (snd.length) {
+        const sw = $("details", "snd"); sw.open = true;
+        sw.append($("summary", "", `BGM・効果音（${snd.length}件）`));
+        snd.forEach(x => {
+          const row = $("div", "snd-row"), top = $("div", "row");
+          top.append($("strong", "", x["名前"]), $("span", "badge " + (x["状態"] === "決定" ? "ok" : "warn"), x["状態"] === "決定" ? "本人が決定" : "仮"));
+          const a = $("audio"); a.controls = true; a.preload = "none"; a.src = x["音"];
+          row.append(top, a, $("p", "snd-note", x["注"]), $("div", "loc", x["場所"]));
+          sw.append(row);
+        });
+        c.append(sw);
+      }
+      g.append(c);
+    });
+    panel.append(g);
+  }
+
+  function renderMotions(kind) {
+    const list = kind === "lip" ? D["口パク"] : D["全身"];
+    if (kind === "lip") {
+      const f = $("div", "filters"), sg = $("div", "seg");
+      ["正面", "斜め角度"].forEach(a => { const b = $("button", "", a); b.setAttribute("aria-pressed", String(state.angle === a)); b.addEventListener("click", () => { state.angle = a; draw(); }); sg.append(b); });
+      f.append(sg); panel.append(f);
+    }
+    const g = $("div", "grid");
+    list.forEach(item => {
+      const fr = kind === "lip" ? item["向き"][state.angle] : item["コマ"];
+      const files = kind === "lip" ? item["ファイル"][state.angle] : item["ファイル"];
+      const c = $("button", "card"); c.type = "button";
+      const st = $("div", "stage"), im = $("img"); im.decoding = "async"; im.alt = files[0]; st.append(im);
+      st._p = player(im, fr); io.observe(st);
+      const n = $("div", "fname"); n.append($("strong", "", base(files[0])));
+      c.append(st, n);
+      c.addEventListener("click", () => openMotion(item, kind));
+      g.append(c);
+    });
+    panel.append(g);
+  }
+
+  const dlg = document.getElementById("dlg");
+  dlg.addEventListener("close", () => { dlg._stop && dlg._stop(); dlg.replaceChildren(); });
+  function fileList(names) {
+    const ul = $("ul", "files");
+    names.forEach(f => { const li = $("li"); li.append($("span", "", base(f)), copyBtn(base(f))); ul.append(li); });
+    return ul;
+  }
+  function openMotion(item, kind) {
+    const main = base(kind === "lip" ? item["ファイル"]["正面"][0] : item["ファイル"][0]);
+    const head = $("div", "dlg-head"), t = $("h2", "", main); t.id = "dlg-title";
+    const x = $("button", "", "閉じる"); x.addEventListener("click", () => dlg.close()); head.append(t, x);
+    const body = $("div", "dlg-body"), ps = $("div", "players");
+    const sets = kind === "lip" ? ["正面", "斜め角度"].map(a => [base(item["ファイル"][a][0]), item["向き"][a]]) : [[null, item["コマ"]]];
+    const ctl = sets.map(([name, fr]) => {
+      const fg = $("figure"), st = $("div", "stage"), im = $("img"); st.append(im); fg.append(st);
+      if (name) { const cap = $("figcaption", "row"); cap.append($("span", "", name), copyBtn(name)); fg.append(cap); }
+      ps.append(fg); return player(im, fr);
+    });
+    const bar = $("div", "row"); bar.style.marginTop = "12px";
+    const play = $("button", "", "止める"); let on = true;
+    play.addEventListener("click", () => { on = !on; play.textContent = on ? "止める" : "再生"; ctl.forEach(p => on ? p.play() : p.stop()); });
+    bar.append(play);
+    if (kind === "body") bar.append(copyBtn(main));
+    bar.append(driveLink(item["置き場"].url, "ドライブのフォルダを開く"));
+    ctl.forEach(p => p.play());
+    dlg._stop = () => ctl.forEach(p => { p.stop(); players.delete(p); });
+    body.append(ps, bar);
+    if (kind === "body" && item["コマのファイル"].length) {
+      const k = $("details", "koma"); k.append($("summary", "", `コマのPNG（${item["コマのファイル"].length}枚・03_全身のコマ）`), fileList(item["コマのファイル"]));
+      const r = $("p"); r.style.marginTop = "8px"; r.append(driveLink(D["全身のコマのドライブ"], "03_全身のコマを開く")); k.append(r);
+      body.append(k);
+    }
+    dlg.replaceChildren(head, body); dlg.showModal();
+  }
+
+  function renderBg() {
+    const g = $("div", "bg-grid");
+    D["背景"].forEach(b => {
+      const c = $("article", "card"), v = $("video"); v.src = b.src; v.poster = b.poster; v.controls = true; v.muted = true; v.playsInline = true; v.preload = "none";
+      const n = $("div", "fname"), row = $("div", "row"); row.style.marginTop = "6px";
+      row.append(copyBtn(base(b["ファイル"])), driveLink(b.url));
+      n.append($("strong", "", base(b["ファイル"])), row);
+      c.append(v, n); g.append(c);
+    });
+    panel.append(g);
+  }
+  function renderIcons() {
+    const g = $("div", "icon-grid");
+    D["アイコン"].forEach(x => {
+      const c = $("div", "icon-card"), im = $("img"); im.src = x.src; im.alt = base(x["ファイル"]); im.loading = "lazy";
+      c.append(im, $("strong", "", base(x["ファイル"]))); g.append(c);
+    });
+    panel.append(g);
+    const r = $("p", "more"); r.append(driveLink(D["アイコンのドライブ"], "06_共通アイコンを開く")); panel.append(r);
+  }
+
+  draw();
+})();
+</script>
+</body>
+</html>
