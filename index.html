@@ -94,6 +94,22 @@ dialog::backdrop{background:#000a}
 .hidden{display:none!important}
 .card{position:relative}
 .card .tag{position:absolute;top:8px;left:8px;z-index:1}
+.dl-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:-4px 0 14px}
+.dl-tools label{font-size:13px;color:var(--muted);display:inline-flex;gap:6px;align-items:center}
+.dl-tools button[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+:root[data-theme="dark"] .dl-tools button[aria-pressed="true"]{color:#14171c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .dl-tools button[aria-pressed="true"]{color:#14171c}}
+.pick{position:absolute;top:8px;right:8px;z-index:2;width:24px;height:24px;border-radius:7px;border:2px solid var(--accent);background:var(--surface);display:grid;place-items:center;font-size:15px;font-weight:800;color:#fff;pointer-events:none}
+.on>.pick{background:var(--accent)}
+.card.on,.icon-card.on{outline:3px solid var(--accent);outline-offset:-1px}
+.icon-card{position:relative}
+.selecting .icon-card,.selecting .card{cursor:pointer}
+.dl-link{font-size:12px;text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:3px 10px;min-height:30px;display:inline-flex;align-items:center;color:var(--accent);background:var(--surface);font-weight:600}
+.dl-link:hover{border-color:var(--accent)}
+.icon-card .dl-link{margin-top:6px}
+.dlbar{position:sticky;bottom:0;z-index:5;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -4px 16px #0001;padding:10px 16px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
+.dlbar strong{font-size:14px}
+.dlbar .msg{font-size:12px;color:var(--muted);flex-basis:100%;text-align:center;margin:0}
 .big{width:100%;max-height:70vh;object-fit:contain;background:var(--stage);border-radius:12px;border:1px solid var(--line);display:block}
 @media (max-width:640px){.bg-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.fname strong{font-size:12px}}
 </style>
@@ -107,6 +123,7 @@ dialog::backdrop{background:#000a}
   <nav class="views" role="tablist" aria-label="素材の種類" id="views"></nav>
   <section id="panel"></section>
 </main>
+<div class="dlbar hidden" id="dlbar" role="region" aria-label="ダウンロード"></div>
 <dialog id="dlg" aria-labelledby="dlg-title"></dialog>
 <script>
 (async () => {
@@ -151,9 +168,78 @@ dialog::backdrop{background:#000a}
   function draw() {
     players.forEach(p => { p.stop(); io.unobserve(p.img.parentElement); }); players.clear();
     TABS.forEach(t => t.btn.setAttribute("aria-selected", String(t.id === current)));
-    panel.replaceChildren(); TABS.find(t => t.id === current).render();
+    panel.replaceChildren(); panel.classList.toggle("selecting", sel.on);
+    dlTools(); TABS.find(t => t.id === current).render(); dlBar();
   }
 
+  // ---------- ダウンロード ----------
+  // ファイルはドライブから直接受け取る（ドライブの共有の設定に従う）
+  const DL = id => `https://drive.usercontent.google.com/download?id=${id}&export=download`;
+  const sel = { on: false, koma: false, items: new Map(), busy: false, msg: "" };  // items: item → タブのid
+  const TAB_ITEMS = { script: () => D["台本"], lip: () => D["口パク"], body: () => D["全身"], duet: () => D["掛け合い"], bg: () => D["背景"],
+    icon: () => D["アイコン"], life: () => D["等身大"]["動作"], mc: () => D["マイクラ"]["動作"] };
+  const hasKoma = id => TAB_ITEMS[id]().some(x => (x.dl || []).some(f => f[2] === "コマ"));
+  const filesOf = it => (it.dl || []).filter(f => f[2] !== "コマ" || sel.koma);
+  function dlLink(f, label = "ダウンロード") { const a = $("a", "dl-link", label); a.href = DL(f[1]); a.rel = "noopener"; a.title = f[0]; a.addEventListener("click", e => e.stopPropagation()); return a; }
+  function dlTools() {
+    const w = $("div", "dl-tools");
+    const pick = $("button", "", sel.on ? "選ぶのをやめる" : "選んでダウンロード"); pick.setAttribute("aria-pressed", String(sel.on));
+    pick.addEventListener("click", () => { sel.on = !sel.on; if (!sel.on) sel.items.clear(); draw(); });
+    const items = TAB_ITEMS[current](), n = items.reduce((a, x) => a + filesOf(x).length, 0);
+    const all = $("button", "", `このタブをまとめてダウンロード（${n}ファイル）`);
+    all.addEventListener("click", () => bulkDownload(items.map(x => [x, current]), TABS.find(t => t.id === current).label));
+    if (current !== "script") w.append(pick); w.append(all);
+    if (hasKoma(current)) {
+      const lb = $("label"), cb = $("input"); cb.type = "checkbox"; cb.checked = sel.koma;
+      cb.addEventListener("change", () => { sel.koma = cb.checked; draw(); });
+      lb.append(cb, "コマのPNGも入れる"); w.append(lb);
+    }
+    panel.append(w);
+  }
+  // 選ぶモードのときは、カードを押すと選ぶ／外す。true を返したら詳細は開かない
+  function pickable(card, item) {
+    if (!sel.on) return;
+    card.append($("span", "pick", "✓")); card.classList.toggle("on", sel.items.has(item));
+    card.setAttribute("aria-pressed", String(sel.items.has(item)));
+  }
+  function togglePick(card, item) {
+    if (!sel.on) return false;
+    sel.items.has(item) ? sel.items.delete(item) : sel.items.set(item, current);
+    card.classList.toggle("on", sel.items.has(item)); card.setAttribute("aria-pressed", String(sel.items.has(item)));
+    dlBar(); return true;
+  }
+  function dlBar() {
+    const bar = document.getElementById("dlbar");
+    if (!sel.on && !sel.busy && !sel.msg) { bar.classList.add("hidden"); return; }
+    bar.classList.remove("hidden"); bar.replaceChildren();
+    if (sel.on) {
+      const n = [...sel.items.keys()].reduce((a, x) => a + filesOf(x).length, 0);
+      bar.append($("strong", "", `${sel.items.size}件を選択中（${n}ファイル）`));
+      const go = $("button", "", "選んだものをダウンロード"); go.disabled = !sel.items.size || sel.busy;
+      go.addEventListener("click", () => bulkDownload([...sel.items.entries()], "選んだ素材"));
+      const clr = $("button", "", "選択を外す"); clr.addEventListener("click", () => { sel.items.clear(); draw(); });
+      bar.append(go, clr);
+    }
+    if (sel.msg) bar.append($("p", "msg", sel.msg));
+  }
+  // まとめて落とすときは、1ファイルずつ続けて保存する（ドライブはページの中からの取り出しを断るため、ZIPにはできない）
+  async function bulkDownload(pairs, label) {
+    if (sel.busy) return;
+    const jobs = [];
+    pairs.forEach(([it]) => filesOf(it).forEach(f => jobs.push(f)));
+    if (!jobs.length) return;
+    if (jobs.length === 1) { location.href = DL(jobs[0][1]); return; }
+    if (!confirm(`${label}の${jobs.length}ファイルを、1つずつ続けて保存します。\nブラウザに「複数のファイルのダウンロード」を聞かれたら、許可してください。`)) return;
+    sel.busy = true;
+    for (let k = 0; k < jobs.length; k++) {
+      sel.msg = `保存しています（${k + 1} / ${jobs.length}）`; dlBar();
+      const fr = document.createElement("iframe"); fr.hidden = true; fr.src = DL(jobs[k][1]); document.body.append(fr);
+      setTimeout(() => fr.remove(), 120000);
+      await new Promise(r => setTimeout(r, 900));
+    }
+    sel.busy = false; sel.msg = `${jobs.length}ファイルの保存を始めました。ブラウザのダウンロード一覧で確かめてください`; dlBar();
+    setTimeout(() => { sel.msg = ""; dlBar(); }, 8000);
+  }
   function copyBtn(text, label = "名前を写す") {
     const b = $("button", "small-btn", label);
     b.addEventListener("click", async ev => { ev.stopPropagation(); try { await navigator.clipboard.writeText(text); b.textContent = "写しました"; } catch (e) { b.textContent = "写せませんでした"; } setTimeout(() => b.textContent = label, 1500); });
@@ -178,6 +264,7 @@ dialog::backdrop{background:#000a}
       const au = $("audio"); au.controls = true; au.preload = "none"; au.src = s["音声"];
       const tx = $("div", "text"); s["本文"].forEach(p => { const e = $("p"); p.forEach((line, i) => { if (i) e.append($("br")); e.append(line); }); tx.append(e); });
       const r = $("div", "row"); r.append(copyBtn(s["本文"].map(p => p.join("\n")).join("\n\n"), "本文を写す"));
+      (s.dl || []).filter(f => f[2] === "本体").forEach(f => r.append(dlLink(f, /\.txt$/.test(f[0]) ? "台本のテキスト" : "ナレーション音声")));
       const pl = $("div"); pl.append(placeRow({ 場所: s["場所"], url: D["音声のドライブ"] }));
       c.append(h, au, r, tx, pl);
       const snd = s["BGM・SE"] || [];
@@ -188,7 +275,8 @@ dialog::backdrop{background:#000a}
           const row = $("div", "snd-row"), top = $("div", "row");
           top.append($("strong", "", x["名前"]), $("span", "badge " + (x["状態"] === "決定" ? "ok" : "warn"), x["状態"] === "決定" ? "本人が決定" : "仮"));
           const a = $("audio"); a.controls = true; a.preload = "none"; a.src = x["音"];
-          row.append(top, a, $("p", "snd-note", x["注"]), $("div", "loc", x["場所"]));
+          const f = (s.dl || []).find(d => d[2] === "音" && x["場所"].endsWith("/" + d[0]));
+          row.append(top, a, $("p", "snd-note", x["注"]), $("div", "loc", x["場所"])); if (f) { const rr = $("div", "row"); rr.style.marginTop = "4px"; rr.append(dlLink(f)); row.append(rr); }
           sw.append(row);
         });
         c.append(sw);
@@ -217,8 +305,8 @@ dialog::backdrop{background:#000a}
       st._p = player(im, fr); io.observe(st);
       const n = $("div", "fname"); n.append($("strong", "", base(files[0])));
       if (item["仮置き"]) c.append($("span", "badge warn tag", "仮置き"));
-      c.append(st, n);
-      c.addEventListener("click", () => openMotion(item, kind));
+      c.append(st, n); pickable(c, item);
+      c.addEventListener("click", () => { if (!togglePick(c, item)) openMotion(item, kind); });
       g.append(c);
     });
     panel.append(g);
@@ -226,9 +314,9 @@ dialog::backdrop{background:#000a}
 
   const dlg = document.getElementById("dlg");
   dlg.addEventListener("close", () => { dlg._stop && dlg._stop(); dlg.replaceChildren(); });
-  function fileList(names) {
-    const ul = $("ul", "files");
-    names.forEach(f => { const li = $("li"); li.append($("span", "", base(f)), copyBtn(base(f))); ul.append(li); });
+  function fileList(names, item) {
+    const ul = $("ul", "files"), ids = new Map((item && item.dl || []).map(f => [f[0], f]));
+    names.forEach(f => { const li = $("li"), r = $("div", "row"); r.append(copyBtn(base(f))); if (ids.has(f)) r.append(dlLink(ids.get(f))); li.append($("span", "", base(f)), r); ul.append(li); });
     return ul;
   }
   function openMotion(item, kind) {
@@ -251,9 +339,11 @@ dialog::backdrop{background:#000a}
     ctl.forEach(p => p.play());
     dlg._stop = () => ctl.forEach(p => { p.stop(); players.delete(p); });
     body.append(ps, bar);
+    const mains = (item.dl || []).filter(f => f[2] === "本体").map(f => f[0]);
+    if (mains.length) { body.append($("h3", "group-title", "ファイル"), fileList(mains, item)); }
     if (kind !== "lip" && item["コマのファイル"].length) {
       const folder = item["コマのフォルダ"] || (kind === "duet" ? "08_掛け合いのコマ" : "03_全身のコマ");
-      const k = $("details", "koma"); k.append($("summary", "", `コマのPNG（${item["コマのファイル"].length}枚・${folder}）`), fileList(item["コマのファイル"]));
+      const k = $("details", "koma"); k.append($("summary", "", `コマのPNG（${item["コマのファイル"].length}枚・${folder}）`), fileList(item["コマのファイル"], item));
       const r = $("p"); r.style.marginTop = "8px"; r.append(driveLink(item["コマのドライブ"] || D[kind === "duet" ? "掛け合いのコマのドライブ" : "全身のコマのドライブ"], folder + "を開く")); k.append(r);
       body.append(k);
     }
@@ -276,7 +366,8 @@ dialog::backdrop{background:#000a}
     D["背景"].forEach(b => {
       const c = $("article", "card"), v = $("video"); v.src = b.src; v.poster = b.poster; v.controls = true; v.muted = true; v.playsInline = true; v.preload = "none";
       const n = $("div", "fname"), row = $("div", "row"); row.style.marginTop = "6px";
-      row.append(copyBtn(base(b["ファイル"])), driveLink(b.url));
+      row.append(copyBtn(base(b["ファイル"])), driveLink(b.url)); if (b.dl && b.dl[0]) row.append(dlLink(b.dl[0]));
+      pickable(c, b); c.addEventListener("click", () => togglePick(c, b));
       n.append($("strong", "", base(b["ファイル"])), row);
       c.append(v, n); g.append(c);
     });
@@ -292,7 +383,8 @@ dialog::backdrop{background:#000a}
       const g = $("div", "icon-grid");
       items.forEach(x => {
         const c = $("div", "icon-card" + (x["暗い背景"] ? " dark" : "")), im = $("img"); im.src = x.src; im.alt = base(x["ファイル"]); im.loading = "lazy";
-        c.append(im, $("strong", "", base(x["ファイル"]))); g.append(c);
+        c.append(im, $("strong", "", base(x["ファイル"]))); if (x.dl && x.dl[0] && !sel.on) c.append(dlLink(x.dl[0]));
+        pickable(c, x); c.addEventListener("click", () => togglePick(c, x)); g.append(c);
       });
       panel.append(g);
     });
