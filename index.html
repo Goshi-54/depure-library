@@ -126,6 +126,16 @@ dialog::backdrop{background:#000a}
 .files li{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
 .koma{margin-top:14px}
 .koma summary{font-size:13px;font-weight:700;cursor:pointer;color:var(--accent);padding:4px 0}
+.koma-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:22px 0 10px}
+.koma-head h3{margin:0}
+.koma-head button{font-size:12px;padding:3px 10px;min-height:0;line-height:1.6}
+.koma-head a{font-size:12px}
+.koma-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.koma-tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.koma-tile .stage{aspect-ratio:1/1}
+.koma-tile .stage .dl-fab{width:26px;height:26px;right:6px;bottom:6px}
+.koma-tile .nm{font-size:11px;line-height:1.4;padding:6px 8px;color:var(--ink);display:flex;justify-content:space-between;gap:6px;align-items:flex-start}
+.koma-tile .nm button{font-size:10px;padding:1px 6px;min-height:0;flex:none}
 .hidden{display:none!important}
 .card{position:relative}
 .card .tag{position:absolute;top:8px;left:8px;z-index:1}
@@ -319,11 +329,13 @@ dialog::backdrop{background:#000a}
     if (sel.msg) bar.append($("p", "msg", sel.msg));
   }
   // まとめて落とすときは、1ファイルずつ続けて保存する（ドライブはページの中からの取り出しを断るため、ZIPにはできない）
-  async function bulkDownload(pairs, label) {
-    if (sel.busy) return;
+  function bulkDownload(pairs, label) {
     const jobs = [];
     pairs.forEach(([it]) => filesOf(it).forEach(f => jobs.push(f)));
-    if (!jobs.length) return;
+    return runJobs(jobs, label);
+  }
+  async function runJobs(jobs, label) {
+    if (sel.busy || !jobs.length) return;
     if (jobs.length === 1) { location.href = DL(jobs[0][1]); return; }
     if (!confirm(`${label}の${jobs.length}ファイルを、1つずつ続けて保存します。\nブラウザに「複数のファイルのダウンロード」を聞かれたら、許可してください。`)) return;
     sel.busy = true;
@@ -440,11 +452,25 @@ dialog::backdrop{background:#000a}
     body.append(ps, bar);
     const mains = (item.dl || []).filter(f => f[2] === "本体").map(f => f[0]);
     if (mains.length) { body.append($("h3", "group-title", "ファイル"), fileList(mains, item)); }
-    if ((item["コマのファイル"] || []).length) {
+    const komas = item["コマのファイル"] || [];
+    if (komas.length) {
+      // コマも素材として見えるように、画像で並べる（本人 11/14）
       const folder = item["コマのフォルダ"] || (kind === "duet" ? "08_掛け合いのコマ" : "03_全身のコマ");
-      const k = $("details", "koma"); k.append($("summary", "", `コマのPNG（${item["コマのファイル"].length}枚・${folder}）`), fileList(item["コマのファイル"], item));
-      const r = $("p"); r.style.marginTop = "8px"; r.append(driveLink(item["コマのドライブ"] || D[kind === "duet" ? "掛け合いのコマのドライブ" : "全身のコマのドライブ"], folder + "を開く")); k.append(r);
-      body.append(k);
+      const ids = new Map((item.dl || []).filter(f => f[2] === "コマ").map(f => [f[0], f]));
+      const hd = $("div", "koma-head"); hd.append($("h3", "group-title", `コマ（${komas.length}枚）`));
+      const all = $("button", "", "コマをまとめてダウンロード"); all.addEventListener("click", () => runJobs([...ids.values()], main + "のコマ"));
+      if (ids.size) hd.append(all);
+      hd.append(driveLink(item["コマのドライブ"] || D[kind === "duet" ? "掛け合いのコマのドライブ" : "全身のコマのドライブ"], folder + "を開く"));
+      const g = $("div", "koma-grid"), thumbs = item["コマの見本"] || [], prefix = main + "_";
+      komas.forEach((f, k) => {
+        const tile = $("div", "koma-tile"), st = $("div", "stage");
+        if (thumbs[k]) { const im = $("img"); im.src = thumbs[k]; im.alt = base(f); im.loading = "lazy"; st.append(im); }
+        if (ids.has(f)) st.append(dlFab(ids.get(f)));
+        const nm = $("div", "nm"), short = base(f).startsWith(prefix) ? base(f).slice(prefix.length) : base(f);
+        nm.append($("span", "", short), copyBtn(base(f))); nm.title = base(f);
+        tile.append(st, nm); g.append(tile);
+      });
+      body.append(hd, g);
     }
     dlg.replaceChildren(head, body); dlg.showModal();
   }
