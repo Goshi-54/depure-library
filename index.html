@@ -37,7 +37,7 @@ p{margin:0 0 10px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#14171c}}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;text-align:left;padding:0;font-weight:400}
-.stage{background:var(--stage);aspect-ratio:1/1;display:grid;place-items:center;position:relative}
+.stage{background:var(--stage);aspect-ratio:1/1;display:grid;place-items:center;position:relative;overflow:hidden;grid-template:100% / 100%}
 .dl-fab{position:absolute;right:8px;bottom:8px;z-index:2;width:30px;height:30px;border-radius:50%;background:rgba(28,34,48,.5);color:#fff;display:grid;place-items:center;text-decoration:none;opacity:.8;transition:opacity .15s,background .15s}
 .dl-fab svg{width:16px;height:16px}
 .dl-fab:hover,.dl-fab:focus-visible{opacity:1;background:var(--accent)}
@@ -100,7 +100,8 @@ dialog::backdrop{background:#000a}
 .hidden{display:none!important}
 .card{position:relative}
 .card .tag{position:absolute;top:8px;left:8px;z-index:1}
-.dl-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:-4px 0 14px}
+.dl-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:-4px 0 14px}
+.dl-tools button{font-size:12px;padding:3px 10px;min-height:0;line-height:1.6}
 .dl-tools label{font-size:13px;color:var(--muted);display:inline-flex;gap:6px;align-items:center}
 .dl-tools button[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
 :root[data-theme="dark"] .dl-tools button[aria-pressed="true"]{color:#14171c}
@@ -196,7 +197,7 @@ dialog::backdrop{background:#000a}
     const pick = $("button", "", sel.on ? "選ぶのをやめる" : "選んでダウンロード"); pick.setAttribute("aria-pressed", String(sel.on));
     pick.addEventListener("click", () => { sel.on = !sel.on; if (!sel.on) sel.items.clear(); draw(); });
     const items = TAB_ITEMS[current](), n = items.reduce((a, x) => a + filesOf(x).length, 0);
-    const all = $("button", "", `このタブをまとめてダウンロード（${n}ファイル）`);
+    const all = $("button", "", `まとめてダウンロード（${n}）`); all.title = `このタブの${n}ファイルをまとめてダウンロード`;
     all.addEventListener("click", () => bulkDownload(items.map(x => [x, current]), TABS.find(t => t.id === current).label));
     if (current !== "script") w.append(pick); w.append(all);
     if (hasKoma(current)) {
@@ -364,14 +365,13 @@ dialog::backdrop{background:#000a}
   }
 
   function renderProv(key) {
-    const G = D[key], url = D[key + "のドライブ"];
+    const G = D[key];
     const groups = [...new Set(G["動作"].map(x => x["系統"] || ""))];
     groups.forEach(grp => {
       const items = G["動作"].filter(x => (x["系統"] || "") === grp);
       panel.append($("h2", "group-title", `動き${grp ? "｜" + grp : ""}（${items.length}）`));
       motionGrid(items, key);
     });
-    const r = $("p", "more"); r.append(driveLink(url, key === "等身大" ? "09_等身大（仮置き）を開く" : "10_マイクラ（仮置き）を開く")); panel.append(r);
   }
 
   function renderBg() {
@@ -401,7 +401,6 @@ dialog::backdrop{background:#000a}
       });
       panel.append(g);
     });
-    const r = $("p", "more"); r.append(driveLink(D["アイコンのドライブ"], "06_共通アイコンを開く")); panel.append(r);
   }
 
   draw();
