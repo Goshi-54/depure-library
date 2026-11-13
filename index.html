@@ -37,7 +37,13 @@ p{margin:0 0 10px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#14171c}}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;text-align:left;padding:0;font-weight:400}
-.stage{background:var(--stage);aspect-ratio:1/1;display:grid;place-items:center}
+.stage{background:var(--stage);aspect-ratio:1/1;display:grid;place-items:center;position:relative}
+.dl-fab{position:absolute;right:8px;bottom:8px;z-index:2;width:30px;height:30px;border-radius:50%;background:rgba(28,34,48,.5);color:#fff;display:grid;place-items:center;text-decoration:none;opacity:.8;transition:opacity .15s,background .15s}
+.dl-fab svg{width:16px;height:16px}
+.dl-fab:hover,.dl-fab:focus-visible{opacity:1;background:var(--accent)}
+.card:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.icon-card .dl-fab{width:26px;height:26px;right:8px;top:62px;bottom:auto}
+.icon-card .dl-fab svg{width:14px;height:14px}
 .stage img{width:100%;height:100%;object-fit:contain;display:block}
 .fname{padding:10px 12px 12px;display:flex;flex-direction:column;gap:2px}
 .fname strong{font-size:13px;font-weight:600;line-height:1.45}
@@ -106,7 +112,6 @@ dialog::backdrop{background:#000a}
 .selecting .icon-card,.selecting .card{cursor:pointer}
 .dl-link{font-size:12px;text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:3px 10px;min-height:30px;display:inline-flex;align-items:center;color:var(--accent);background:var(--surface);font-weight:600}
 .dl-link:hover{border-color:var(--accent)}
-.icon-card .dl-link{margin-top:6px}
 .dlbar{position:sticky;bottom:0;z-index:5;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -4px 16px #0001;padding:10px 16px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
 .dlbar strong{font-size:14px}
 .dlbar .msg{font-size:12px;color:var(--muted);flex-basis:100%;text-align:center;margin:0}
@@ -180,6 +185,11 @@ dialog::backdrop{background:#000a}
     icon: () => D["アイコン"], life: () => D["等身大"]["動作"], mc: () => D["マイクラ"]["動作"] };
   const hasKoma = id => TAB_ITEMS[id]().some(x => (x.dl || []).some(f => f[2] === "コマ"));
   const filesOf = it => (it.dl || []).filter(f => f[2] !== "コマ" || sel.koma);
+  function dlFab(f) {
+    const a = $("a", "dl-fab"); a.href = DL(f[1]); a.rel = "noopener"; a.title = "ダウンロード：" + f[0]; a.setAttribute("aria-label", "ダウンロード：" + base(f[0]));
+    a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>';
+    a.addEventListener("click", e => e.stopPropagation()); return a;
+  }
   function dlLink(f, label = "ダウンロード") { const a = $("a", "dl-link", label); a.href = DL(f[1]); a.rel = "noopener"; a.title = f[0]; a.addEventListener("click", e => e.stopPropagation()); return a; }
   function dlTools() {
     const w = $("div", "dl-tools");
@@ -300,8 +310,11 @@ dialog::backdrop{background:#000a}
     list.forEach(item => {
       const fr = kind === "lip" ? item["向き"][state.angle] : item["コマ"];
       const files = kind === "lip" ? item["ファイル"][state.angle] : item["ファイル"];
-      const c = $("button", "card"); c.type = "button";
+      const c = $("div", "card"); c.tabIndex = 0; c.setAttribute("role", "button");
+      c.addEventListener("keydown", e => { if (e.target === c && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); c.click(); } });
       const st = $("div", "stage"), im = $("img"); im.decoding = "async"; im.alt = files[0]; st.append(im);
+      const main = (item.dl || []).find(f => f[0] === files[0]);
+      if (main && !sel.on) st.append(dlFab(main));
       st._p = player(im, fr); io.observe(st);
       const n = $("div", "fname"); n.append($("strong", "", base(files[0])));
       if (item["仮置き"]) c.append($("span", "badge warn tag", "仮置き"));
@@ -383,7 +396,7 @@ dialog::backdrop{background:#000a}
       const g = $("div", "icon-grid");
       items.forEach(x => {
         const c = $("div", "icon-card" + (x["暗い背景"] ? " dark" : "")), im = $("img"); im.src = x.src; im.alt = base(x["ファイル"]); im.loading = "lazy";
-        c.append(im, $("strong", "", base(x["ファイル"]))); if (x.dl && x.dl[0] && !sel.on) c.append(dlLink(x.dl[0]));
+        c.append(im, $("strong", "", base(x["ファイル"]))); if (x.dl && x.dl[0] && !sel.on) c.append(dlFab(x.dl[0]));
         pickable(c, x); c.addEventListener("click", () => togglePick(c, x)); g.append(c);
       });
       panel.append(g);
