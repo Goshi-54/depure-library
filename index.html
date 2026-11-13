@@ -70,6 +70,13 @@ p{margin:0 0 10px}
 .icon-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 10px;text-align:center}
 .icon-card img{width:72px;height:72px;object-fit:contain;display:block;margin:2px auto 8px}
 .icon-card strong{display:block;font-size:12px;font-weight:600}
+.icon-card.dark img{background:#2b3038;border-radius:8px;padding:4px}
+.group-title{font-size:15px;margin:22px 0 10px}
+.group-title:first-child{margin-top:4px}
+.grid.wide{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.grid.wide .stage{aspect-ratio:16/9}
+.players.wide-stage{grid-template-columns:1fr}
+.players.wide-stage .stage{aspect-ratio:16/9}
 .more{margin-top:14px}
 dialog{border:0;border-radius:16px;padding:0;width:min(880px,calc(100% - 24px));max-height:calc(100% - 32px);background:var(--bg);color:var(--ink)}
 dialog::backdrop{background:#000a}
@@ -123,6 +130,7 @@ dialog::backdrop{background:#000a}
     { id: "script", label: "台本", n: D["台本"].length, render: renderScripts },
     { id: "lip", label: "口パク", n: D["口パク"].length, render: () => renderMotions("lip") },
     { id: "body", label: "全身の動き", n: D["全身"].length, render: () => renderMotions("body") },
+    { id: "duet", label: "掛け合い", n: D["掛け合い"].length, render: () => renderMotions("duet") },
     { id: "bg", label: "背景", n: D["背景"].length, render: renderBg },
     { id: "icon", label: "アイコン", n: D["アイコン"].length, render: renderIcons },
   ];
@@ -186,13 +194,13 @@ dialog::backdrop{background:#000a}
   }
 
   function renderMotions(kind) {
-    const list = kind === "lip" ? D["口パク"] : D["全身"];
+    const list = kind === "lip" ? D["口パク"] : kind === "duet" ? D["掛け合い"] : D["全身"];
     if (kind === "lip") {
       const f = $("div", "filters"), sg = $("div", "seg");
       ["正面", "斜め角度"].forEach(a => { const b = $("button", "", a); b.setAttribute("aria-pressed", String(state.angle === a)); b.addEventListener("click", () => { state.angle = a; draw(); }); sg.append(b); });
       f.append(sg); panel.append(f);
     }
-    const g = $("div", "grid");
+    const g = $("div", kind === "duet" ? "grid wide" : "grid");
     list.forEach(item => {
       const fr = kind === "lip" ? item["向き"][state.angle] : item["コマ"];
       const files = kind === "lip" ? item["ファイル"][state.angle] : item["ファイル"];
@@ -218,7 +226,7 @@ dialog::backdrop{background:#000a}
     const main = base(kind === "lip" ? item["ファイル"]["正面"][0] : item["ファイル"][0]);
     const head = $("div", "dlg-head"), t = $("h2", "", main); t.id = "dlg-title";
     const x = $("button", "", "閉じる"); x.addEventListener("click", () => dlg.close()); head.append(t, x);
-    const body = $("div", "dlg-body"), ps = $("div", "players");
+    const body = $("div", "dlg-body"), ps = $("div", kind === "duet" ? "players wide-stage" : "players");
     const sets = kind === "lip" ? ["正面", "斜め角度"].map(a => [base(item["ファイル"][a][0]), item["向き"][a]]) : [[null, item["コマ"]]];
     const ctl = sets.map(([name, fr]) => {
       const fg = $("figure"), st = $("div", "stage"), im = $("img"); st.append(im); fg.append(st);
@@ -229,14 +237,15 @@ dialog::backdrop{background:#000a}
     const play = $("button", "", "止める"); let on = true;
     play.addEventListener("click", () => { on = !on; play.textContent = on ? "止める" : "再生"; ctl.forEach(p => on ? p.play() : p.stop()); });
     bar.append(play);
-    if (kind === "body") bar.append(copyBtn(main));
+    if (kind !== "lip") bar.append(copyBtn(main));
     bar.append(driveLink(item["置き場"].url, "ドライブのフォルダを開く"));
     ctl.forEach(p => p.play());
     dlg._stop = () => ctl.forEach(p => { p.stop(); players.delete(p); });
     body.append(ps, bar);
-    if (kind === "body" && item["コマのファイル"].length) {
-      const k = $("details", "koma"); k.append($("summary", "", `コマのPNG（${item["コマのファイル"].length}枚・03_全身のコマ）`), fileList(item["コマのファイル"]));
-      const r = $("p"); r.style.marginTop = "8px"; r.append(driveLink(D["全身のコマのドライブ"], "03_全身のコマを開く")); k.append(r);
+    if (kind !== "lip" && item["コマのファイル"].length) {
+      const folder = kind === "duet" ? "08_掛け合いのコマ" : "03_全身のコマ";
+      const k = $("details", "koma"); k.append($("summary", "", `コマのPNG（${item["コマのファイル"].length}枚・${folder}）`), fileList(item["コマのファイル"]));
+      const r = $("p"); r.style.marginTop = "8px"; r.append(driveLink(D[kind === "duet" ? "掛け合いのコマのドライブ" : "全身のコマのドライブ"], folder + "を開く")); k.append(r);
       body.append(k);
     }
     dlg.replaceChildren(head, body); dlg.showModal();
@@ -254,12 +263,19 @@ dialog::backdrop{background:#000a}
     panel.append(g);
   }
   function renderIcons() {
-    const g = $("div", "icon-grid");
-    D["アイコン"].forEach(x => {
-      const c = $("div", "icon-card"), im = $("img"); im.src = x.src; im.alt = base(x["ファイル"]); im.loading = "lazy";
-      c.append(im, $("strong", "", base(x["ファイル"]))); g.append(c);
+    const groups = ["アプリ", "文字バッジ", "ドット絵", "Codex", "ChatGPTペット", "note・Claudeのキャラ"];
+    const label = { "アプリ": "アプリアイコン", "ドット絵": "ドット絵キャラ", "Codex": "Codexキャラ" };
+    groups.forEach(grp => {
+      const items = D["アイコン"].filter(x => x["組"] === grp);
+      if (!items.length) return;
+      panel.append($("h2", "group-title", `${label[grp] || grp}（${items.length}）`));
+      const g = $("div", "icon-grid");
+      items.forEach(x => {
+        const c = $("div", "icon-card" + (x["暗い背景"] ? " dark" : "")), im = $("img"); im.src = x.src; im.alt = base(x["ファイル"]); im.loading = "lazy";
+        c.append(im, $("strong", "", base(x["ファイル"]))); g.append(c);
+      });
+      panel.append(g);
     });
-    panel.append(g);
     const r = $("p", "more"); r.append(driveLink(D["アイコンのドライブ"], "06_共通アイコンを開く")); panel.append(r);
   }
 
