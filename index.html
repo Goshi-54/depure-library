@@ -21,7 +21,7 @@ p{margin:0 0 10px}
 .topbar{background:var(--surface);border-bottom:1px solid var(--line)}
 .topbar-in{padding:16px clamp(16px,3vw,32px);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .topbar h1{font-size:20px;letter-spacing:-.01em}
-.link-btn{display:inline-flex;align-items:center;min-height:38px;padding:7px 13px;border-radius:9px;background:var(--accent);color:#fff;font-size:13px;font-weight:700;text-decoration:none}
+.link-btn{display:inline-flex;align-items:center;min-height:0;padding:3px 10px;border-radius:8px;background:var(--accent);color:#fff;font-size:12px;font-weight:700;text-decoration:none;line-height:1.6}
 :root[data-theme="dark"] .link-btn{color:#14171c}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .link-btn{color:#14171c}}
 .menu-btn{min-height:38px;width:40px;padding:0;display:inline-grid;place-items:center;border-radius:9px}
@@ -440,7 +440,7 @@ dialog::backdrop{background:#000a}
     body.append(ps, bar);
     const mains = (item.dl || []).filter(f => f[2] === "本体").map(f => f[0]);
     if (mains.length) { body.append($("h3", "group-title", "ファイル"), fileList(mains, item)); }
-    if (kind !== "lip" && item["コマのファイル"].length) {
+    if ((item["コマのファイル"] || []).length) {
       const folder = item["コマのフォルダ"] || (kind === "duet" ? "08_掛け合いのコマ" : "03_全身のコマ");
       const k = $("details", "koma"); k.append($("summary", "", `コマのPNG（${item["コマのファイル"].length}枚・${folder}）`), fileList(item["コマのファイル"], item));
       const r = $("p"); r.style.marginTop = "8px"; r.append(driveLink(item["コマのドライブ"] || D[kind === "duet" ? "掛け合いのコマのドライブ" : "全身のコマのドライブ"], folder + "を開く")); k.append(r);
